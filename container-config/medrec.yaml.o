@@ -1,0 +1,91 @@
+{
+  "kind": "Deployment",
+  "apiVersion": "extensions/v1beta1",
+  "metadata": {
+    "name": "medrec-oracle-weblogic",
+    "namespace": "default",
+    "labels": {
+      "k8s-app": "medrec-oracle-weblogic"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "k8s-app": "medrec-oracle-weblogic"
+      }
+    },
+    "template": {
+      "metadata": {
+        "name": "medrec-oracle-weblogic",
+        "creationTimestamp": null,
+        "labels": {
+          "k8s-app": "medrec-oracle-weblogic"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "medrec-oracle-weblogic",
+            "image": "artifactory-gde.oracleindustry.com/gbucs-k8s-dev/oradb-medrec:12.2.1.2-dev",
+            "resources": {
+		"requests": {
+                "cpu": "500m",
+                "memory": "2000Mi" },
+	    "limits": {
+                "cpu": "1000m",
+                "memory": "4000Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "IfNotPresent",
+            "securityContext": {
+              "privileged": false
+            }
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "securityContext": {},
+        "schedulerName": "default-scheduler"
+      }
+    },
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxUnavailable": "25%",
+        "maxSurge": "25%"
+      }
+    },
+    "revisionHistoryLimit": 10,
+    "progressDeadlineSeconds": 6000
+  }
+}
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "rgbu-rbe1-oracle-weblogic",
+    "namespace": "default",
+    "labels": {
+      "k8s-app": "rgbu-rbe1-oracle-weblogic"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "protocol": "TCP",
+        "port": 8011,
+        "targetPort": 8011
+      }
+    ],
+    "selector": {
+      "k8s-app": "rgbu-rbe1-oracle-weblogic"
+    },
+    "type": "LoadBalancer",
+    "sessionAffinity": "None",
+    "externalTrafficPolicy": "Cluster"
+  }
+}

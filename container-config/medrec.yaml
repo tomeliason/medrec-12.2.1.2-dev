@@ -1,0 +1,77 @@
+{
+  "kind": "Deployment",
+  "apiVersion": "extensions/v1beta1",
+  "metadata": {
+    "name": "medrec-oracle-weblogic",
+    "namespace": "default",
+    "labels": {
+      "k8s-app": "medrec-oracle-weblogic"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "k8s-app": "medrec-oracle-weblogic"
+      }
+    },
+    "template": {
+      "metadata": {
+        "name": "medrec-oracle-weblogic",
+        "creationTimestamp": null,
+        "labels": {
+          "k8s-app": "medrec-oracle-weblogic"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "medrec-oracle-weblogic",
+            "image": "artifactory-gde.oracleindustry.com/gbucs-k8s-dev/oradb-medrec:12.2.1.2-dev",
+            "ports": [ {
+                "containerPort" : 7011,
+                "hostPort" : 7011
+            } ],
+            "volumeMounts": [ {
+                "name" : "container-config",
+                "mountPath" : "/container-config"
+            } ],
+            "resources": {
+		"requests": {
+                "cpu": "500m",
+                "memory": "2000Mi" },
+	    "limits": {
+                "cpu": "1000m",
+                "memory": "4000Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "IfNotPresent",
+            "securityContext": {
+              "privileged": false
+            }
+          }
+        ],
+        "volumes": [ {
+            "name" : "container-config",
+            "configMap" : { "name" : "medrec-container-config-dev" }
+        } ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "securityContext": {},
+        "schedulerName": "default-scheduler"
+      }
+    },
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxUnavailable": "25%",
+        "maxSurge": "25%"
+      }
+    },
+    "revisionHistoryLimit": 10,
+    "progressDeadlineSeconds": 6000
+  }
+}
